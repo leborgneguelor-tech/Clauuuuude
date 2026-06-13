@@ -29,7 +29,13 @@
     resume: document.getElementById("resume"),
     stop: document.getElementById("stop"),
     highlight: document.getElementById("highlight"),
+    download: document.getElementById("download"),
+    player: document.getElementById("player"),
+    qualityHint: document.getElementById("qualityHint"),
   };
+
+  let currentMode = "browser"; // "browser" ou "quality"
+  let lastBlobUrl = null;
 
   const STORAGE_KEY = "voix-ia-settings";
   let voices = [];
@@ -137,6 +143,14 @@
   let utterance = null;
 
   function speak() {
+    if (currentMode === "quality") {
+      speakQuality();
+    } else {
+      speakBrowser();
+    }
+  }
+
+  function speakBrowser() {
     if (synth.speaking) synth.cancel();
 
     const text = el.text.value.trim();
@@ -251,6 +265,94 @@
     el.charCount.textContent = el.text.value.length;
   }
   el.text.addEventListener("input", updateCharCount);
+
+  // --- Mode qualité (serveur local Piper) ---
+  async function speakQuality() {
+    const text = el.text.value.trim();
+    if (!text) return;
+
+    el.play.disabled = true;
+    el.play.textContent = "⏳ Génération…";
+    try {
+      const resp = await fetch("/api/synthesize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voice: el.voice.value }),
+      });
+      if (!resp.ok) {
+        let msg = "Erreur du serveur";
+        try {
+          msg = (await resp.json()).error || msg;
+        } catch (e) {
+          /* réponse non-JSON */
+        }
+        throw new Error(msg);
+      }
+      const blob = await resp.blob();
+      if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+      lastBlobUrl = URL.createObjectURL(blob);
+      el.player.src = lastBlobUrl;
+      el.player.play();
+      el.download.classList.remove("hidden");
+    } catch (err) {
+      alert(
+        "Impossible de générer la voix en mode qualité.\n\n" +
+          err.message +
+          "\n\nVérifie que le serveur local est lancé (serveur/demarrer.sh) " +
+          "et que tu ouvres la page depuis http://localhost:5000."
+      );
+    } finally {
+      el.play.disabled = false;
+      el.play.textContent = "▶️ Lire";
+    }
+  }
+
+  async function loadQualityVoices() {
+    try {
+      const resp = await fetch("/api/voices");
+      const data = await resp.json();
+      el.voice.innerHTML = "";
+      data.voices.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.id;
+        opt.textContent = v.label;
+        el.voice.appendChild(opt);
+      });
+    } catch (e) {
+      el.voice.innerHTML = '<option value="fr_FR-siwis-medium">Serveur non détecté</option>';
+    }
+  }
+
+  function setMode(mode) {
+    currentMode = mode;
+    const isQuality = mode === "quality";
+    synth.cancel();
+    setPlayingState(false);
+    el.highlight.textContent = "";
+    el.download.classList.add("hidden");
+    el.qualityHint.classList.toggle("hidden", !isQuality);
+    // En mode qualité : la langue et le surlignage navigateur n'ont pas de sens.
+    el.lang.disabled = isQuality;
+    el.pause.classList.toggle("hidden", isQuality);
+    el.resume.classList.toggle("hidden", isQuality);
+    if (isQuality) {
+      loadQualityVoices();
+    } else {
+      populateLanguages();
+    }
+  }
+
+  document.querySelectorAll('input[name="mode"]').forEach((radio) => {
+    radio.addEventListener("change", (e) => setMode(e.target.value));
+  });
+
+  el.download.addEventListener("click", () => {
+    if (!lastBlobUrl) return;
+    const a = document.createElement("a");
+    a.href = lastBlobUrl;
+    a.download = "voix.wav";
+    a.click();
+  });
 
   // --- Initialisation ---
   applySavedSliders();

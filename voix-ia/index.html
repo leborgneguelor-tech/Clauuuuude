@@ -18,6 +18,25 @@
       ⚠️ Ton navigateur ne supporte pas la synthèse vocale. Essaie avec Chrome, Edge ou Safari à jour.
     </div>
 
+    <section class="card mode-card">
+      <span class="field-label">Mode de génération</span>
+      <div class="mode-toggle">
+        <label class="mode-option">
+          <input type="radio" name="mode" value="browser" checked />
+          <span><strong>Navigateur</strong><br /><small>Gratuit, instantané</small></span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="mode" value="quality" />
+          <span><strong>Qualité IA</strong><br /><small>Serveur local + téléchargement</small></span>
+        </label>
+      </div>
+      <p id="qualityHint" class="mode-hint hidden">
+        Mode qualité : lance d'abord le serveur (<code>serveur/demarrer.sh</code> ou
+        <code>demarrer.bat</code>) et ouvre cette page depuis
+        <code>http://localhost:5000</code>.
+      </p>
+    </section>
+
     <section class="card">
       <label for="text" class="field-label">Ton texte</label>
       <textarea
@@ -59,7 +78,10 @@
       <button id="pause" class="btn" disabled>⏸️ Pause</button>
       <button id="resume" class="btn" disabled>⏯️ Reprendre</button>
       <button id="stop" class="btn btn-danger" disabled>⏹️ Stop</button>
+      <button id="download" class="btn hidden">💾 Télécharger</button>
     </section>
+
+    <audio id="player" class="hidden"></audio>
 
     <section class="card preview">
       <h2 class="preview-title">Aperçu en direct</h2>

@@ -33,14 +33,41 @@ Pour enregistrer gratuitement :
 - Enregistreur intégré à ton OS (macOS : Enregistrement d'écran · Windows : Xbox Game Bar)
 - Logiciels libres : **Audacity** ou **OBS Studio** (captent le son du système)
 
-## 🚀 Aller plus loin (qualité « studio » + export fichier)
+## 🚀 Mode « Qualité IA » (voix naturelles + téléchargement) — gratuit aussi !
 
-La Web Speech API est gratuite et illimitée, mais ses voix dépendent du système.
-Pour une qualité supérieure et l'export de fichiers audio, on peut brancher un
-**modèle open-source local** comme :
+En plus du mode navigateur, l'app propose un **mode qualité** basé sur **Piper**,
+un modèle de synthèse vocale open-source. Voix bien plus naturelles, et tu peux
+**télécharger le résultat en fichier WAV**. C'est ta machine qui calcule, donc ça
+reste 100 % gratuit et illimité.
 
-- **Piper** — léger, rapide, tourne même sur petit matériel
-- **Kokoro** — excellent rapport qualité / poids
-- **Coqui XTTS / Chatterbox** — haute qualité + clonage de voix (nécessite un GPU)
+### Installation (une seule fois)
 
-Ces solutions restent **gratuites et illimitées** : c'est ta machine qui fait le calcul.
+Tu as juste besoin de **Python 3** installé sur ton ordinateur.
+
+**macOS / Linux :**
+```bash
+cd voix-ia/serveur
+./demarrer.sh
+```
+
+**Windows :** double-clique sur `voix-ia/serveur/demarrer.bat`
+(ou lance-le depuis l'invite de commandes).
+
+Le script crée un environnement isolé, installe Piper automatiquement, télécharge
+les voix au premier usage, puis démarre le serveur.
+
+### Utilisation
+
+1. Lance le serveur (voir ci-dessus).
+2. Ouvre **http://localhost:5000** dans ton navigateur.
+3. Choisis le mode **« Qualité IA »** en haut de la page.
+4. Écris ton texte, choisis une voix, clique sur **Lire**, puis **Télécharger**.
+
+### Voix incluses
+
+- Français : Siwis (femme), UPMC, Tom (homme)
+- Anglais US : Amy (femme), Ryan (homme, haute qualité)
+
+> Tu peux ajouter d'autres voix open-source depuis le catalogue Piper
+> (https://huggingface.co/rhasspy/piper-voices) en complétant le dictionnaire
+> `VOICES` dans `serveur/server.py`.
